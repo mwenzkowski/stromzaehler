@@ -14,7 +14,7 @@ struct measurement {
 	double power, powerL1, powerL2, powerL3;
 	double voltageL1, voltageL2, voltageL3;
 	uint32_t seconds_index;	
-	time_t timestamp;
+	struct timespec timestamp;
 };
 
 smlReader_t *smlReader_create(const char *device);

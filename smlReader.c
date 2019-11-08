@@ -317,9 +317,7 @@ bool smlReader_nextMeasurement(struct smlReader *sr, struct measurement *m)
 	}
 
 	read_measurements(sr,m);
-	time(&(m->timestamp));
-
-
+	clock_gettime(CLOCK_REALTIME, &m->timestamp);
 
 	return true;
 }
