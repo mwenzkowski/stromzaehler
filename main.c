@@ -68,12 +68,7 @@ int main()
 
 	while (smlReader_nextMeasurement(reader, &m)) {
 
-		if (insert_data(curl, &m) == false) {
-			smlReader_close(reader);
-			curl_global_cleanup();
-			fprintf(stderr, "Übertragung mit curl fehlgeschlagen\n");
-			exit(EXIT_FAILURE);
-		}
+		insert_data(curl, &m);
 	}
 
 	smlReader_close(reader);
