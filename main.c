@@ -6,9 +6,11 @@
 #include <stdint.h>
 #include <stdio.h> // printf()
 #include <stdlib.h> // exit()
+#include <time.h> // localtime()
 #include "smlReader.h"
 
 #define BUF_LEN 1024
+#define ABS(x) ((x) < 0 ? (-(x)) : (x))
 
 
 const char serial_dev[] = "/dev/ttyAMA0";
@@ -31,7 +33,7 @@ CURL *create_influxdb_curl_handle()
 	return curl;
 }
 
-bool insert_data(CURL *curl, struct measurement *m)
+bool insert_data(CURL *curl, struct measurement *m, double day_consumption)
 {
 	assert(curl);
 	assert(m);
@@ -43,9 +45,11 @@ bool insert_data(CURL *curl, struct measurement *m)
 
 	long len = snprintf(curl_data, BUF_LEN,
 		"stromzaehler count=%.7f,power=%.2f,power1=%.2f,power2=%.2f,"
-		"power3=%.2f,volt1=%.1f,volt2=%.1f,volt3=%.1f %lld",
+		"power3=%.2f,volt1=%.1f,volt2=%.1f,volt3=%.1f %lld\n"
+		"tagesverbrauch count=%.7f 0",
 		m->energy_count, m->power, m->powerL1, m->powerL2, m->powerL3,
-		m->voltageL1, m->voltageL2, m->voltageL3, timestamp);
+		m->voltageL1, m->voltageL2, m->voltageL3, timestamp,
+		day_consumption);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, len);
 
 	res = curl_easy_perform(curl);
@@ -75,11 +79,31 @@ int main()
 		exit(EXIT_FAILURE);
 	}
 
+	double ref_count;
+	bool ref_count_known = false;
+	double day_consumption;
+	struct tm *ltime;
+	int day_of_year = -1;
+
 	struct measurement m;
 
 	while (smlReader_nextMeasurement(reader, &m)) {
 
-		insert_data(curl, &m);
+		ltime = localtime(&m.timestamp.tv_sec);
+
+		if (ltime->tm_yday != day_of_year) {
+
+			if (ltime->tm_hour == 0 && ltime->tm_min < 10) {
+				day_of_year = ltime->tm_yday;
+				ref_count = m.energy_count;
+				ref_count_known = true;
+			} else {
+				ref_count_known = false;
+			}
+		}
+
+		day_consumption = ref_count_known ? m.energy_count - ref_count : -1.0;
+		insert_data(curl, &m, day_consumption);
 	}
 
 	smlReader_close(reader);
