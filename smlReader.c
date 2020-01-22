@@ -1,4 +1,4 @@
-// Copyright © 2019 Maximilian Wenzkowski
+// Copyright © 2020 Maximilian Wenzkowski
 
 #include <assert.h> // assert();
 #include <errno.h>
@@ -42,7 +42,8 @@
 
 const uint8_t endSeq[] = {0x1b, 0x1b, 0x1b, 0x1b, 0x1a};
 
-static int serialPort_open(const char* device)
+static int
+serialPort_open(const char* device)
 {
 	int bits;
 	struct termios config = {0};
@@ -106,7 +107,8 @@ struct smlReader {
 	unsigned next, len;
 };
 
-smlReader_t *smlReader_create(const char *device)
+smlReader_t *
+smlReader_create(const char *device)
 {
 	assert(device != 0);
 
@@ -134,7 +136,8 @@ smlReader_t *smlReader_create(const char *device)
 	return sr;
 }
 
-void smlReader_close(struct smlReader *sr)
+void
+smlReader_close(struct smlReader *sr)
 {
 	if (sr == NULL) {
 		return;
@@ -148,7 +151,8 @@ void smlReader_close(struct smlReader *sr)
 	free(sr);
 }
 
-static bool readByte(struct smlReader *sr, uint8_t *dest)
+static bool
+readByte(struct smlReader *sr, uint8_t *dest)
 {
 	assert(sr != NULL);
 	assert(sr->fd >= 0);
@@ -172,7 +176,8 @@ static bool readByte(struct smlReader *sr, uint8_t *dest)
 	return true;
 }
 
-static bool check_received_data(struct smlReader *sr)
+static bool
+check_received_data(struct smlReader *sr)
 {
 	assert(sr);
 
@@ -194,7 +199,8 @@ static bool check_received_data(struct smlReader *sr)
 
 }
 
-static bool readSmlFile(struct smlReader *sr)
+static bool
+readSmlFile(struct smlReader *sr)
 {
 	assert(sr);
 
