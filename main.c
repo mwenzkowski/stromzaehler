@@ -280,13 +280,19 @@ int main()
 			end *= 1000000000;
 
 			get_ref_count = get_count(start,end, &ref_count);
-			calc_day_consumption =
-				ref_count != -1.0 ?  true : false;
+
+			if (ref_count == -1.0) {
+				calc_day_consumption = false;
+				day_consumption = -1.0;
+			} else {
+				calc_day_consumption = true;
+			}
 		}
 
 		if (calc_day_consumption) {
 			day_consumption = m.energy_count - ref_count;
 		}
+
 		insert_data(curl, &m, day_consumption);
 	}
 
