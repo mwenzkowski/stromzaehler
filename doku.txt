@@ -81,3 +81,42 @@ starten und dann
 	GROUP BY time(1d) tz('Europe/Berlin')
 
 ausführen (Die Zeiten natürlich anpassen).
+
+
+4. Das Programm kompilieren
+===========================
+
+In dem Ordner in dem auch diese Doku-Datei liegt, das Programm
+
+	make
+
+ausführen. Dies kompiliert das Programm mit dem Namen 'stromzaehler'.
+
+
+5. Das Programm automatisch nach dem Booten starten
+===================================================
+
+	sudo cp stromzaehler.service /etc/systemd/system/
+
+Dann in der Datei /etc/systemd/system/stromzaehler.service den Pfad zum
+Stromzähler-Programm anpassen wenn nötig. Dazu die Zeile
+
+	ExecStart=/home/pi/stromzähler/stromzaehler
+
+ändern.
+
+Zum einlesen der neuen Service-Datei
+
+	sudo systemctl daemon-reload
+
+ausführen.
+
+Zum aktivieren des Dienstes beim Booten und zum sofortigen starten
+
+	sudo systemctl enable stromzaehler.service
+	sudo systemctl start stromzaehler.service
+
+ausführen. Ein Befehl der beides gleichzeitung macht ist
+
+	
+	sudo systemctl enable --now stromzaehler.service

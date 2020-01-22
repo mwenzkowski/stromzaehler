@@ -1,0 +1,14 @@
+[Unit]
+Description=Stromzaehlerdaten auslesen und in Datenbank einfügen
+Requires=influxdb.service
+After=influxdb.service
+
+[Service]
+Type=simple
+ExecStart=/home/pi/stromzähler/stromzaehler
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
