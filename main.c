@@ -180,7 +180,7 @@ bool get_count(uint64_t start_time, uint64_t end_time, double *count)
 	}
 
 error:
-	// curl_free(NULL) ist wie NOP
+	// curl_free(NULL) und curl_easy_cleanup(NULL) sind wie NOP
 	curl_free(url_encoded_query);
 	curl_easy_cleanup(c);
 
