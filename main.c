@@ -1,4 +1,4 @@
-// Copyright © 2019 Maximilian Wenzkowski
+// Copyright © 2020 Maximilian Wenzkowski
 
 #include <assert.h> // assert()
 #include <curl/curl.h>
@@ -26,7 +26,7 @@ const char SELECT_FORMAT[] =
 	" AND time < %" PRIu64 " ORDER BY DESC LIMIT 1";
 
 const char INFLUXDB_QUERY_URL_FORMAT[] =
-	"http://192.168.2.80:8086/query?db=stromzaehler&q=%s";
+	"http://localhost:8086/query?db=stromzaehler&q=%s";
 
 struct write_buf {
 	char buf[BUF_LEN];
