@@ -24,40 +24,60 @@ Grafana herunterladen und installieren:
 	wget https://dl.grafana.com/oss/release/grafana-rpi_6.4.2_armhf.deb
 	sudo dpkg -i grafana-rpi_6.4.2_armhf.deb
 
-	(Dieses Paket ist für den Raspberry Pi 1. Für andere Raspberry Pi's
-	können auf https://grafana.com/grafana/download?platform=arm gefunden
-	werden.)
+	(Dieses Paket ist für den Raspberry Pi 1. Pakete für andere Raspberry
+	Pi's können auf https://grafana.com/grafana/download?platform=arm
+	gefunden werden.)
 
 Grafana aktivieren und starten:
 
 	sudo systemctl daemon-reload
 	sudo systemctl enable --now grafana-server
 
-Datenbank erstellen
-===================
+
+2. Datenbank erstellen
+======================
 
 	influx -execute 'CREATE DATABASE stromzaehler'
 
 
+3. Tagesverbräuche autmatisch in Tabelle einfügen lassen
+========================================================
 
-Tagesverbräuche mit influxdb erstellen
-======================================
+Todo:
+Prüfen ob es möglich ist die 'Continuous Query' zu erstellen ohne das die
+Tabellen/Measurements auf die sich die Query bezieht schon existieren.
 
-Die alten Werte in Tagesverbräuche umrechnen und in die Tabelle 'tageszaehler'
-einfügen:
+Um eine 'Continuous Query' zu erstellen, die nach jedem Tag den Tagesverbrauch
+berechnet und in die Tabelle einfügt, wird
 
-SELECT difference(last("count"))
-INTO tageszaehler
-FROM stromzaehler
-WHERE time >= '2019-10-18' AND time < '2019-10-29'
-GROUP BY time(1d) tz('Europe/Berlin')
+	influx -database stromzaehler
 
-Eine 'Continuous Query' erstellen um nach jedem Tag den Tagesverbrauch zu
-berechnen und in die Tabelle einzufügen:
+ausgeführt und in diesem Programm die Anfrage
 
-CREATE CONTINUOUS QUERY cq_tageszaehler ON stromzaehler
-	BEGIN select difference(last("count"))
+	CREATE CONTINUOUS QUERY cq_tageszaehler ON stromzaehler
+		BEGIN select difference(last("count"))
+		INTO tageszaehler
+		FROM stromzaehler
+		GROUP BY time(1d) tz('Europe/Berlin')
+	END
+
+durchgeführt.
+
+Gab es schon Werte bevor die 'Continuous Query' erstellt wurde können die
+Tagesverbräuche dieser Werte mit folgendem Aufruf berechnet und in die Tabelle
+'tageszaehler' eingefügt werden (Dies sollte nicht nötig sein, dies war nur
+einmal erforderlich, da die 'Continuous Query' einige Tage nach der
+Aufzeichnung erstellt wurde und diese die Tagesverbräuche nur für neue
+abgeschlossene Tage berechnet).
+
+	influx -database stromzaehler
+
+starten und dann
+
+	SELECT difference(last("count"))
 	INTO tageszaehler
 	FROM stromzaehler
+	WHERE time >= '2019-10-18' AND time < '2019-10-29'
 	GROUP BY time(1d) tz('Europe/Berlin')
-END
+
+ausführen (Die Zeiten natürlich anpassen).
