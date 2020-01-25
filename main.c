@@ -232,6 +232,12 @@ bool insert_data(CURL *curl, struct measurement *m, double day_consumption)
 
 int main()
 {
+	// Zeilenweise Pufferung einstellen, für den Fall das stdout/stderr
+	// nicht mit einem Terminal verbunden sind. Dies ist z.B. der Fall wenn
+	// dieses Programm als Dienst automatisch beim Booten gestartet wird.
+	setlinebuf(stdout);
+	setlinebuf(stderr);
+
 	curl_global_init(CURL_GLOBAL_ALL);
 
 	CURL *curl = create_influxdb_curl_handle();
