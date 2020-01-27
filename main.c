@@ -156,8 +156,8 @@ bool get_count(uint64_t start_time, uint64_t end_time, double *count)
 	CURLcode res = curl_easy_perform(c);
 	if(res != CURLE_OK) {
 
-		fprintf(stderr, "curl_easy_perform() fehlgeschlagen: %s\n",
-		curl_easy_strerror(res));
+		fprintf(stderr, "Fehler: Abfrage aus der Datenbank "
+			"fehlgeschlagen (%s)\n", curl_easy_strerror(res));
 
 		*count = -1.0;
 		retry = true;
