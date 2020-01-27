@@ -10,7 +10,27 @@ Benötigt zum kompilieren des eigenen Programms.
 InfluxDB
 ---------
 
+Installieren mit
+
 	sudo apt-get install influxdb influxdb-client
+
+In der Konfigurationsdatei /etc/influxdb/influxdb.conf die Zeilen
+auskommentiern und/oder ändern:
+
+	...
+	reporting-enables = false
+	...
+	# Bind address to use for the RPC service for backup and restore.
+	bind-address = "0.0.0.0:8088"
+	...
+	[http]
+	...
+	log-enabled = false
+	...
+
+Dann influxdb neustarten um die neue Konfiguration zu benutzen:
+
+	sudo systemctl restart influxdb.service
 
 Grafana
 -------
