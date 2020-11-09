@@ -2,7 +2,6 @@
 
 #include "smlReader.h"
 #include <assert.h> // assert()
-#include <inttypes.h>
 #include <libpq-fe.h>
 #include <math.h> // lround()
 #include <stdbool.h> //Für die Werte true und false
@@ -10,39 +9,96 @@
 #include <stdlib.h> // exit()
 #include <unistd.h> // sleep()
 
-#define BUF_LEN 1024
+
+const char SERIAL_DEV[] = "/dev/ttyAMA0";
+const int QUERY_BUF_LEN = 512;
+
+struct stromzaehler {
+	PGconn *dbConn;
+	smlReader_t *smlReader;
+};
 
 
-const char serial_dev[] = "/dev/ttyAMA0";
-
-
-char query[BUF_LEN];
-
-
-bool insert_data(PGconn *conn, struct measurement *m)
+void
+error_exit(struct stromzaehler *stromzaehler)
 {
-	assert(conn);
-	assert(m);
+	if (stromzaehler->dbConn) {
+		PQfinish(stromzaehler->dbConn);
+	}
+	if (stromzaehler->smlReader) {
+		smlReader_close(stromzaehler->smlReader);
+	}
+	exit(EXIT_FAILURE);
+}
 
-	snprintf(query, BUF_LEN,
+void
+stromzaehler_create_SmlReader(struct stromzaehler *stromzaehler)
+{
+	assert(stromzaehler);
+
+	stromzaehler->smlReader = smlReader_create(SERIAL_DEV);
+	if (stromzaehler->smlReader == NULL) {
+		// smlReader_create() gibt eine Fehlermeldung aus
+		error_exit(stromzaehler);
+	}
+}
+
+void
+stromzaehler_connect_to_db(struct stromzaehler *stromzaehler)
+{
+	assert(stromzaehler);
+
+	stromzaehler->dbConn = PQconnectdb("user=stromzähler dbname=stromzähler");
+	if (stromzaehler->dbConn == NULL) {
+		fprintf(stderr, "PQconnectdb() fehlgeschlagen");
+		error_exit(stromzaehler);
+	}
+	if (PQstatus(stromzaehler->dbConn) == CONNECTION_BAD) {
+		fprintf(stderr, "Connection to database failed: %s\n",
+			PQerrorMessage(stromzaehler->dbConn));
+		error_exit(stromzaehler);
+	}
+}
+
+void
+insert_measurement(struct stromzaehler *stromzaehler,
+		struct measurement *measurement)
+{
+	assert(stromzaehler);
+	assert(stromzaehler->dbConn);
+	assert(measurement);
+
+	char query_buf[QUERY_BUF_LEN];
+
+	int len = snprintf(query_buf, QUERY_BUF_LEN,
 		"INSERT INTO stromzähler(energy, power_total, power_phase1, power_phase2, "
 		"power_phase3) VALUES(%.7f, %ld, %ld, %ld, %ld);",
-		m->energy_count, lround(m->power), lround(m->powerL1),
-		lround(m->powerL2), lround(m->powerL3));
+		measurement->energy_count, lround(measurement->power),
+		lround(measurement->powerL1), lround(measurement->powerL2),
+		lround(measurement->powerL3));
+	assert(len < QUERY_BUF_LEN && "query_buf too small");
 
-	PGresult *res = PQexec(conn, query);
+	PGresult *res = PQexec(stromzaehler->dbConn, query_buf);
+	if (res == NULL) {
+		fprintf(stderr, "PQexec failed: probably OOM\n");
+		error_exit(stromzaehler);
+	}
+
 	if (PQresultStatus(res) != PGRES_COMMAND_OK) {
-		fprintf(stderr, "PQexec failed: %s\n", PQerrorMessage(conn));
-		PQclear(res);
-		return false;
+		fprintf(stderr, "PQexec failed: %s\n",
+			PQerrorMessage(stromzaehler->dbConn));
+
+		if (PQstatus(stromzaehler->dbConn) == CONNECTION_BAD) {
+			fprintf(stderr, "Connection to database lost");
+			error_exit(stromzaehler);
+		}
 	}
 
 	PQclear(res);
-	return true;
 }
 
-
-int main()
+int
+main()
 {
 	// Zeilenweise Pufferung einstellen, für den Fall das stdout/stderr
 	// nicht mit einem Terminal verbunden sind. Dies ist z.B. der Fall wenn
@@ -50,43 +106,15 @@ int main()
 	setlinebuf(stdout);
 	setlinebuf(stderr);
 
+	struct stromzaehler stromzaehler = {0};
+	stromzaehler_create_SmlReader(&stromzaehler);
+	stromzaehler_connect_to_db(&stromzaehler);
 
-	smlReader_t *reader = smlReader_create(serial_dev);
-	if (reader == NULL) {
-		// smlReader_create() gibt eine Fehlermeldung aus
-		exit(EXIT_FAILURE);
+	struct measurement measurement;
+	while (smlReader_nextMeasurement(stromzaehler.smlReader, &measurement)) {
+		insert_measurement(&stromzaehler, &measurement);
 	}
 
-	while(true) {
-
-		PGconn *conn = PQconnectdb("user=stromzähler dbname=stromzähler");
-		if (conn == NULL) {
-			fprintf(stderr, "PQconnectdb() fehlgeschlagen");
-			PQfinish(conn);
-			smlReader_close(reader);
-			exit(EXIT_FAILURE);
-		}
-		if (PQstatus(conn) == CONNECTION_BAD) {
-			fprintf(stderr, "Connection to database failed: %s\n",
-				PQerrorMessage(conn));
-			PQfinish(conn);
-			sleep(5); // Warte 5 Sekunden
-			break;
-		}
-
-		struct measurement m;
-		while(true) {
-			if (!smlReader_nextMeasurement(reader, &m)) {
-				fprintf(stderr, "smlReader_nextMeasurement() fehlgeschlagen");
-				PQfinish(conn);
-				smlReader_close(reader);
-				exit(EXIT_FAILURE);
-			}
-			insert_data(conn, &m);
-		}
-
-		PQfinish(conn);
-		sleep(5); // Warte 5 Sekunden
-	}
-	smlReader_close(reader);
+	fprintf(stderr, "smlReader_nextMeasurement() fehlgeschlagen");
+	error_exit(&stromzaehler);
 }
