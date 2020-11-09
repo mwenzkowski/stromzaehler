@@ -1,6 +1,5 @@
-stromzähler
+stromzaehler
 *.o
 *.swp
-*.o
 .*
 !.gitignore
