@@ -1,109 +1,172 @@
-1. Benötigte Pakete installieren
-================================
+1. GPU-Speicher des Raspberry Pi konfigurieren
+==============================================
 
-libcurl
--------
-	sudo apt install libcurl4-openssl-dev
+Der Raspberry Pi 1B besitzt nur 512 MB Ram. Setze den Anteil der von der GPU
+genutzt werden kann auf das Minimum von 16MB um mehr Ram für Programme und
+Betriebssystem zu haben. Dazu in der Datei '/boot/config.txt' die entsprechende
+Zeilt ändern zu:
 
-Benötigt zum kompilieren des eigenen Programms.
+	gpu_mem=16
 
-InfluxDB
----------
-
-Installieren mit
-
-	sudo apt-get install influxdb influxdb-client
-
-In der Konfigurationsdatei /etc/influxdb/influxdb.conf die Zeilen
-auskommentiern und/oder ändern:
-
-	...
-	reporting-enables = false
-	...
-	# Bind address to use for the RPC service for backup and restore.
-	bind-address = "0.0.0.0:8088"
-	...
-	[http]
-	...
-	log-enabled = false
-	...
-
-Dann influxdb neustarten um die neue Konfiguration zu benutzen:
-
-	sudo systemctl restart influxdb.service
-
-Grafana
--------
-
-Abhängigkeiten von Grafana installieren:
-
-	sudo apt install adduser libfontconfig1
-
-Grafana herunterladen und installieren:
-
-	wget https://dl.grafana.com/oss/release/grafana-rpi_7.2.2_armhf.deb
-	sudo dpkg -i grafana-rpi_7.2.2_armhf.deb
-
-	(Dieses Paket ist für den Raspberry Pi 1. Pakete für andere Raspberry
-	Pi's können auf https://grafana.com/grafana/download?platform=arm
-	gefunden werden.)
-
-Grafana aktivieren und starten:
-
-	sudo systemctl daemon-reload
-	sudo systemctl enable --now grafana-server
+Achtung: Damit stehen nicht mehr alle Funktionen der GPU zu verfügung,
+         vielleicht geht auch die Raspberry Pi Kamera nicht mehr!
 
 
-2. Datenbank erstellen
-======================
+2. PostgreSQL installieren
+==========================
 
-	influx -execute 'CREATE DATABASE stromzaehler'
+	sudo apt install postgresql postgresql-client libpq-dev
 
+Dies erstellt den Linux-Nutzer 'postgres', den postgres-Nuter 'postgres' (superuser)
+und den Datenbank-Cluster '/var/lib/postgresql/11/main'
 
-3. Tagesverbräuche autmatisch in Tabelle einfügen lassen
-========================================================
+Die existierenden Datenbank-Cluster können mit
 
-Todo:
-Prüfen ob es möglich ist die 'Continuous Query' zu erstellen ohne das die
-Tabellen/Measurements auf die sich die Query bezieht schon existieren.
+	pg_lsclusters
 
-Um eine 'Continuous Query' zu erstellen, die nach jedem Tag den Tagesverbrauch
-berechnet und in die Tabelle einfügt, wird
+aufgelistet werden.
 
-	influx -database stromzaehler
-
-ausgeführt und in diesem Programm die Anfrage
-
-	CREATE CONTINUOUS QUERY cq_tageszaehler ON stromzaehler
-		BEGIN select difference(last("count"))
-		INTO tageszaehler
-		FROM stromzaehler
-		GROUP BY time(1d) tz('Europe/Berlin')
-	END
-
-durchgeführt.
-
-Gab es schon Werte bevor die 'Continuous Query' erstellt wurde können die
-Tagesverbräuche dieser Werte mit folgendem Aufruf berechnet und in die Tabelle
-'tageszaehler' eingefügt werden (Dies sollte nicht nötig sein, dies war nur
-einmal erforderlich, da die 'Continuous Query' einige Tage nach der
-Aufzeichnung erstellt wurde und diese die Tagesverbräuche nur für neue
-abgeschlossene Tage berechnet).
-
-	influx -database stromzaehler
-
-starten und dann
-
-	SELECT difference(last("count"))
-	INTO tageszaehler
-	FROM stromzaehler
-	WHERE time >= '2019-10-18' AND time < '2019-10-29'
-	GROUP BY time(1d) tz('Europe/Berlin')
-
-ausführen (Die Zeiten natürlich anpassen).
+Dienst stoppen: sudo systemctl stop postgresql@11-main
+Dienst starten: sudo systemctl start postgresql@11-main
+Dienst neustarten: sudo systemctl restart postgresql@11-main
 
 
-4. Das Programm kompilieren
+3. Datenbank konfigurieren
+==========================
+
+/etc/postgresql/11/main/postgresql.conf
+---------------------------------------
+
+In der Datei /etc/postgresql/11/main/postgresql.conf' die folgenden
+Einstellungen machen (mit sudo bearbeiten):
+
+	max_connections = 20
+	shared_buffers = 76MB
+	work_mem = 6MB
+	maintenance_work_mem = 24MB
+	effective_cache_size = 188MB
+	max_parallel_maintenance_workers = 0
+	max_parallel_workers_per_gather = 0
+	max_parallel_workers = 0
+
+
+Hinweise zu den gewählten Zahlen:
+
+shared_buffers: Bei mind. 1Gb Ram ist 25% der Ram-Größe optimal, bei weniger
+                kann man bei 15% starten und bis 25% gehen.
+
+                    (512-16) * 0.15 = 74,4 MB ~ 76 MB
+                    (512-16) * 0.25 = 124 MB
+
+                Da wir nur wenige Datenbank-Verbindungen haben nehmen wir den
+                Default-Wert von 128MB. Dafür ziehen wir bei der Berechnung von
+                work_mem etwas ab.
+
+work_mem: Der Ram der pro Datenbank-Verbindung verbraucht werden kann. Optimale
+          Größe ist (25% des Rams) / max_connections.
+              (512-16) * 0.25 = 124
+              124 / 20 = 6,2 MB ~ 6 MB
+
+maintenance_work_mem: Stellt den Ram für Wartungsaufgaben. Es wird empfohlen
+                      den Wert höher als work_mem zu setzen, dies vergessert
+                      die Leistung für VACUUM. Im allgemeine sollte der Wert 5%
+                      der RAM Größe haben.
+
+                          (512-16) * 0.05 = 24,8 MB ~ 24 MB
+
+effective_cache_size: Schätzt wie viel Ram vom Betriebssystem für das Cachen
+                      der Festplatte und der Datenbank benuztt werden kann.
+                      Ideal ist 50% des Rams. Ram für das Betriebssystem und
+                      Grafana ist 60MB vorgesehen.
+
+                          (512-16) / 2 - 60 = 188 MB
+
+
+max_parallel_*: Der Raspberry Pi 1B hat nur einen CPU-Kern, daher machen
+                parallele worker keinen Sinn.
+
+
+/etc/postgresql/11/main/pg_hba.conf
+-----------------------------------
+
+In der Datei /etc/postgresql/11/main/pg_hba.conf' die folgenden Einstellungen
+machen (mit sudo bearbeiten):
+
+	# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+	# "local" is for Unix domain socket connections only
+	local   all             all                                     trust
+
+
+Diese Änderung bewirkt das sich lokale Unix-Nutzer als jeder Datenbank-Nuter
+(außer dem DB-Nutzer 'postgres') mit jeder Datenbank verbinden können. Als
+Datenbank-Nutzer 'postgres' kann man sich nur als Linux-Nutzer 'postgres' mit
+einer Datenbank verbinden, da vor der oben geänderten Zeile die Einstellung
+
+	local   all             postgres                                peer
+
+steht.
+
+
+Datenbank neustarten
+--------------------
+
+Nach diesen Änderungen muss postgresql neugestartet werden damit sie übernommen
+werden:
+
+	$ sudo systemctl restart postgresql@11-main
+
+
+2. postgres-Nuter und Datenbank für den Stromzähler erstellen
+=============================================================
+
+	$ sudo -iu postgres
+	[postgres]$ createuser stromzähler
+	[postgres]$ createdb -O stromzähler stromzähler
+	[postgres]$ exit
+
+
+3. Tabellen erstellen
+=====================
+
+CREATE TABLE stromzähler(
+	id INTEGER GENERATED ALWAYS AS IDENTITY,
+	timestamp TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	energy DOUBLE PRECISION NOT NULL,
+	power_total INTEGER NOT NULL,
+	power_phase1 SMALLINT NOT NULL,
+	power_phase2 SMALLINT NOT NULL,
+	power_phase3 SMALLINT NOT NULL)
+PARTITION BY RANGE(timestamp);
+
+CREATE TABLE stromzähler_2019_10
+PARTITION OF stromzähler
+FOR VALUES FROM ('2019-10-01') TO ('2019-11-01');
+
+CREATE TABLE stromzähler_2019_11
+PARTITION OF stromzähler
+FOR VALUES FROM ('2019-11-01') TO ('2019-12-01');
+
+...
+
+CREATE TABLE stromzähler_2020_12
+PARTITION OF stromzähler
+FOR VALUES FROM ('2020-12-01') TO ('2021-01-01');
+
+
+CREATE TABLE stromzähler_default PARTITION OF stromzähler DEFAULT;
+
+CREATE INDEX idx_stromzähler_timestamp ON stromzähler USING BRIN(timestamp);
+
+
+4. CSV-Dateien einlesen
+=====================
+
+	$psql -U stromzähler -d stromzähler
+	stromzähler=> \copy stromzähler(timestamp, energy, power_total, power_phase1, power_phase2, power_phase3) from '/home/pi/csv_backup/all_up_to_2020-11-01.csv' DELIMITER ',' CSV HEADER
+
+
+5. Das Programm kompilieren
 ===========================
 
 In dem Ordner in dem auch diese Doku-Datei liegt, das Programm
@@ -113,7 +176,7 @@ In dem Ordner in dem auch diese Doku-Datei liegt, das Programm
 ausführen. Dies kompiliert das Programm mit dem Namen 'stromzaehler'.
 
 
-5. Das Programm automatisch nach dem Booten starten
+6. Das Programm automatisch nach dem Booten starten
 ===================================================
 
 	sudo cp stromzaehler.service /etc/systemd/system/
@@ -137,6 +200,6 @@ Zum aktivieren des Dienstes beim Booten und zum sofortigen starten
 	sudo systemctl start stromzaehler.service
 
 ausführen. Ein Befehl der beides gleichzeitung macht ist
-
 	
 	sudo systemctl enable --now stromzaehler.service
+

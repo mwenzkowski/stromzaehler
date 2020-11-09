@@ -1,7 +1,7 @@
 [Unit]
 Description=Stromzaehlerdaten auslesen und in Datenbank einfügen
-Requires=influxdb.service
-After=influxdb.service
+Requires=postgresql@11-main.service
+After=postgresql@11-main.service
 
 [Service]
 Type=simple

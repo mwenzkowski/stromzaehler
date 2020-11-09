@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -pedantic -Wformat=2 -O2
-LDLIBS = -lcurl
+CFLAGS = -Wall -Wextra -pedantic -Wformat=2 -O2 $$(pkg-config --cflags libpq)
+LDLIBS = -lm $$(pkg-config --libs libpq)
 
 name = stromzaehler
 objects = main.o smlReader.o crc16.o
