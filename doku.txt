@@ -129,35 +129,52 @@ werden:
 3. Tabellen erstellen
 =====================
 
-CREATE TABLE stromzähler(
-	id INTEGER GENERATED ALWAYS AS IDENTITY,
-	timestamp TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	energy DOUBLE PRECISION NOT NULL,
-	power_total INTEGER NOT NULL,
-	power_phase1 SMALLINT NOT NULL,
-	power_phase2 SMALLINT NOT NULL,
-	power_phase3 SMALLINT NOT NULL)
-PARTITION BY RANGE(timestamp);
+Partitionierte Tabelle 'stromzähler'
+------------------------------------
 
-CREATE TABLE stromzähler_2019_10
-PARTITION OF stromzähler
-FOR VALUES FROM ('2019-10-01') TO ('2019-11-01');
+	CREATE TABLE stromzähler(
+		id INTEGER GENERATED ALWAYS AS IDENTITY,
+		timestamp TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		energy DOUBLE PRECISION NOT NULL,
+		power_total INTEGER NOT NULL,
+		power_phase1 SMALLINT NOT NULL,
+		power_phase2 SMALLINT NOT NULL,
+		power_phase3 SMALLINT NOT NULL)
+	PARTITION BY RANGE(timestamp);
 
-CREATE TABLE stromzähler_2019_11
-PARTITION OF stromzähler
-FOR VALUES FROM ('2019-11-01') TO ('2019-12-01');
+	CREATE TABLE stromzähler_2019_10
+	PARTITION OF stromzähler
+	FOR VALUES FROM ('2019-10-01') TO ('2019-11-01');
 
-...
+	CREATE TABLE stromzähler_2019_11
+	PARTITION OF stromzähler
+	FOR VALUES FROM ('2019-11-01') TO ('2019-12-01');
 
-CREATE TABLE stromzähler_2020_12
-PARTITION OF stromzähler
-FOR VALUES FROM ('2020-12-01') TO ('2021-01-01');
+	...
+
+	CREATE TABLE stromzähler_2020_12
+	PARTITION OF stromzähler
+	FOR VALUES FROM ('2020-12-01') TO ('2021-01-01');
 
 
-CREATE TABLE stromzähler_default PARTITION OF stromzähler DEFAULT;
+	CREATE TABLE stromzähler_default PARTITION OF stromzähler DEFAULT;
 
-CREATE INDEX idx_stromzähler_timestamp ON stromzähler USING BRIN(timestamp);
+	CREATE INDEX idx_stromzähler_timestamp ON stromzähler USING BRIN(timestamp);
 
+
+Tabelle für aktuelle Einzelwerte
+--------------------------------
+
+	CREATE TABLE current_values(
+		id INTEGER,
+		timestamp TIMESTAMPTZ NOT NULL,
+		energy DOUBLE PRECISION,
+		energy_daily DOUBLE PRECISION);
+
+Zeile erstellen da das Programm erwartet das eine Zeile mit id=0 existiert zum
+updaten:
+
+	INSERT INTO current_values VALUES(0, CURRENT_TIMESTAMP, NULL, NULL);
 
 4. CSV-Dateien einlesen
 =====================
