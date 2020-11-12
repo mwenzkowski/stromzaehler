@@ -220,3 +220,27 @@ ausführen. Ein Befehl der beides gleichzeitung macht ist
 	
 	sudo systemctl enable --now stromzaehler.service
 
+
+7. Das Skript stromzaehler_daily.sh einmal täglich ausfüren
+===========================================================
+
+	sudo cp stromzaehler_daily.{service,timer} /etc/systemd/system/
+
+Dann in der Datei /etc/systemd/system/stromzaehler_daily.service den Pfad zum
+Skript anpassen wenn nötig. Dazu die Zeile
+
+	ExecStart=/home/pi/stromzähler/stromzaehler_daily.sh
+
+ändern.
+
+Zum einlesen der neuen Service-Datei
+
+	sudo systemctl daemon-reload
+
+ausführen.
+
+Zum aktivieren und starten des Timers 
+
+	sudo systemctl enable --now stromzaehler_daily.timer
+
+ausführen.

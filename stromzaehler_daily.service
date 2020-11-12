@@ -1,0 +1,8 @@
+[Unit]
+Description=Aufgaben des Stromzählers die einmal pro Tag anfallen ausführen
+Requires=postgresql@11-main.service
+After=postgresql@11-main.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/pi/stromzähler/stromzaehler_daily.sh

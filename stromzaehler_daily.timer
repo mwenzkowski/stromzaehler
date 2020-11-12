@@ -1,0 +1,8 @@
+[Unit]
+Description=Täglich stromzähler_daily.sh ausführen
+
+[Timer]
+OnCalendar=00:01
+
+[Install]
+WantedBy=timers.target
