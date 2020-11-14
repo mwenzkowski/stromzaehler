@@ -23,13 +23,13 @@ struct counter_cache {
 };
 
 void
-counter_cache_insert(struct counter_cache *cache, double counter)
+counter_cache_insert(struct counter_cache *cache, double counter,
+		time_t timestamp)
 {
-		assert(cache);
-		cache->counter = counter;
-		cache->timestamp = time(NULL);
-		assert(cache->timestamp != (time_t) -1);
-		cache->empty = false;
+	assert(cache);
+	cache->counter = counter;
+	cache->timestamp = timestamp;
+	cache->empty = false;
 }
 
 void counter_cache_clear(struct counter_cache *cache)
@@ -180,12 +180,13 @@ counter_cache_valid(struct counter_cache *cache, struct date *date)
 
 
 void
-stromzaehler_update_counterAtStartOfDay(struct stromzaehler *stromzaehler)
+stromzaehler_update_counterAtStartOfDay(struct stromzaehler *stromzaehler,
+		time_t now)
 {
 	assert(stromzaehler);
 
 	struct date old_date = stromzaehler->current_date;
-	get_current_date(&stromzaehler->current_date);
+	time_to_date(&stromzaehler->current_date, now);
 
 	if (!date_is_equal(&stromzaehler->current_date, &old_date)) {
 
@@ -206,11 +207,16 @@ insert_measurement(struct stromzaehler *stromzaehler,
 	assert(stromzaehler->dbConn);
 	assert(measurement);
 
+	long long timestamp_sec = (long long) measurement->timestamp.tv_sec;
+	long timestamp_msec = measurement->timestamp.tv_nsec / 1000000;
+
 	char query_buf[QUERY_BUF_LEN];
 
 	int len = snprintf(query_buf, QUERY_BUF_LEN,
-		"INSERT INTO stromzähler(energy, power_total, power_phase1, power_phase2, "
-		"power_phase3) VALUES(%.7f, %ld, %ld, %ld, %ld);",
+		"INSERT INTO stromzähler(timestamp, energy, power_total, "
+		"power_phase1, power_phase2, power_phase3) "
+		"VALUES(to_timestamp(%lld.%.3ld), %.7f, %ld, %ld, %ld, %ld);",
+		timestamp_sec, timestamp_msec,
 		measurement->energy_count, lround(measurement->power),
 		lround(measurement->powerL1), lround(measurement->powerL2),
 		lround(measurement->powerL3));
@@ -290,12 +296,14 @@ main()
 	stromzaehler_init(&stromzaehler);
 
 	struct measurement measurement;
-	while (smlReader_nextMeasurement(stromzaehler.smlReader, &measurement)) {
+	while (smlReader_nextMeasurement(stromzaehler.smlReader,
+			&measurement)) {
+		time_t now = measurement.timestamp.tv_sec;
 
-		counter_cache_insert(&stromzaehler.counter_cache, measurement.energy_count);
-
+		counter_cache_insert(&stromzaehler.counter_cache,
+			measurement.energy_count, now);
 		insert_measurement(&stromzaehler, &measurement);
-		stromzaehler_update_counterAtStartOfDay(&stromzaehler);
+		stromzaehler_update_counterAtStartOfDay(&stromzaehler, now);
 		update_current_values(&stromzaehler, &measurement);
 	}
 

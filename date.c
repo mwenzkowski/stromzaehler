@@ -10,6 +10,22 @@
 
 
 void
+time_to_date(struct date *date, time_t time)
+{
+	assert(date);
+	assert(time >= (time_t) 0);
+
+	struct tm *tm = localtime(&time);
+	assert(tm);
+
+	date->day = tm->tm_mday;
+	// tm_mon speichert den Monat als 0-11 (Januar = 0)
+	date->month = tm->tm_mon + 1;
+	// tm_year speichert das Jahr als Offset von 1900
+	date->year = tm->tm_year + 1900;
+}
+
+void
 get_current_date(struct date *date)
 {
 	assert(date);
@@ -17,14 +33,7 @@ get_current_date(struct date *date)
 	time_t now = time(NULL);
 	assert(now != (time_t) -1);
 
-	struct tm *tm_now = localtime(&now);
-	assert(tm_now);
-
-	date->day = tm_now->tm_mday;
- 	// tm_mon speichert den Monat als 0-11 (Januar = 0)
-	date->month = tm_now->tm_mon + 1;
- 	// tm_year speichert das Jahr als Offset von 1900
-	date->year = tm_now->tm_year + 1900;
+	time_to_date(date, now);
 }
 
 void
@@ -37,9 +46,9 @@ get_previous_date(struct date *date, struct date *prev_date)
 	assert(prev_date);
 
 	struct tm tm;
- 	// tm_year speichert das Jahr als Offset von 1900
+	// tm_year speichert das Jahr als Offset von 1900
 	tm.tm_year = date->year - 1900;
- 	// tm_mon speichert den Monat als 0-11 (Januar = 0)
+	// tm_mon speichert den Monat als 0-11 (Januar = 0)
 	tm.tm_mon = date->month - 1;
 	tm.tm_mday = date->day;
 	tm.tm_hour = 12;
@@ -61,9 +70,9 @@ get_previous_date(struct date *date, struct date *prev_date)
 	assert(tm_prev);
 
 	prev_date->day = tm_prev->tm_mday;
- 	// tm_mon speichert den Monat als 0-11 (Januar = 0)
+	// tm_mon speichert den Monat als 0-11 (Januar = 0)
 	prev_date->month = tm_prev->tm_mon + 1;
- 	// tm_year speichert das Jahr als Offset von 1900
+	// tm_year speichert das Jahr als Offset von 1900
 	prev_date->year = tm_prev->tm_year + 1900;
 }
 
@@ -76,9 +85,9 @@ date_to_time(struct date *date)
 		date->year >= 1900);
 
 	struct tm tm;
- 	// tm_year speichert das Jahr als Offset von 1900
+	// tm_year speichert das Jahr als Offset von 1900
 	tm.tm_year = date->year - 1900;
- 	// tm_mon speichert den Monat als 0-11 (Januar = 0)
+	// tm_mon speichert den Monat als 0-11 (Januar = 0)
 	tm.tm_mon = date->month - 1;
 	tm.tm_mday = date->day;
 	tm.tm_hour = 0;
