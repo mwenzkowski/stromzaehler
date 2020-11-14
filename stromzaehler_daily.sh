@@ -16,6 +16,7 @@ readonly db_name="stromzähler"
 readonly table_basename="stromzähler"
 readonly table_default="${table_basename}_default"
 readonly timestamp_column="timestamp"
+readonly tagesverbrauch_table="tagesverbrauch"
 
 function has_table {
 	local -r table_name="$1"
@@ -73,5 +74,52 @@ function update_partitioned_table {
 	create_partition_if_necessary "$year_next" "$month_next"
 }
 
+function insert_daily_energy_consumption {
+	local -r date="$1"
+	local -r prev="$(date "--date=$date -1 day" +%F)"
+	local -r next="$(date "--date=$date +1 day" +%F)"
+
+	psql -U "$db_user" -d "$db_name" <<EOF
+INSERT INTO $tagesverbrauch_table
+SELECT '$date'::DATE,
+	(SELECT energy
+	FROM stromzähler
+	WHERE timestamp >= '$date 23:59:00' AND timestamp < '$next'
+	ORDER BY timestamp DESC LIMIT 1)
+	-
+	(SELECT energy
+	FROM stromzähler
+	WHERE timestamp >= '$prev 23:59:00' AND timestamp < '$date'
+	ORDER BY timestamp DESC LIMIT 1);
+EOF
+}
+
+function insert_missing_daily_energy_consumption {
+
+	local -r today="$(date +%F)"
+
+	local date="$(psql -U "$db_user" -d "$db_name" --tuples-only --no-align \
+		-c "SELECT date FROM tagesverbrauch ORDER BY date DESC LIMIT 1;")"
+	if [ -z "$date" ]
+	then
+		date="2019-10-17" # Erster Tag mit bekanntem Verbrauch
+	else
+		date="$(date "--date=$date +1 day" +%F)"
+	fi
+
+	# Abbrechen wenn das letzte Datum aus der Datenbank älter oder gleich
+	# dem heutigen Datum ist
+	local -r today_sec="$(date -d "$today" +%s)"
+	local -r date_sec="$(date -d "$date" +%s)"
+	[ "$date_sec" -ge "$today_sec" ] && return
+
+	while [ "$date" != "$today" ]
+	do
+		insert_daily_energy_consumption "$date"
+		date="$(date "--date=$date + 1 day" +%F)"
+	done
+
+}
 
 update_partitioned_table
+insert_missing_daily_energy_consumption

@@ -176,6 +176,16 @@ updaten:
 
 	INSERT INTO current_values VALUES(0, CURRENT_TIMESTAMP, NULL, NULL);
 
+
+Tabelle für den Energieverbrauch pro Tag
+----------------------------------------
+
+	CREATE TABLE tagesverbrauch(
+		date DATE NOT NULL,
+		energy DOUBLE PRECISION);
+
+	CREATE INDEX idx_tagesverbrauch_date ON tagesverbrauch(date);
+
 4. CSV-Dateien einlesen
 =====================
 
