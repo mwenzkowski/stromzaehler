@@ -159,7 +159,7 @@ Partitionierte Tabelle 'stromzähler'
 
 	CREATE TABLE stromzähler_default PARTITION OF stromzähler DEFAULT;
 
-	CREATE INDEX idx_stromzähler_timestamp ON stromzähler USING BRIN(timestamp);
+	CREATE INDEX idx_stromzähler_timestamp ON stromzähler USING BRIN(timestamp) WITH (pages_per_range=4, autosummarize=true);
 
 
 Tabelle für aktuelle Einzelwerte
