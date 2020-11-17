@@ -40,6 +40,8 @@ Dienst neustarten: sudo systemctl restart postgresql@11-main
 In der Datei /etc/postgresql/11/main/postgresql.conf' die folgenden
 Einstellungen machen (mit sudo bearbeiten):
 
+	listen_addresses = '*'
+
 	max_connections = 20
 	shared_buffers = 76MB
 	work_mem = 6MB
@@ -107,6 +109,10 @@ einer Datenbank verbinden, da vor der oben geänderten Zeile die Einstellung
 
 steht.
 
+Verbindungen als DB-Nutzer 'stromzähler' zu der Datenbank 'stromzähler' über
+das Netzwerk erlauben:
+
+	host    stromzähler     stromzähler     192.168.2.0/24          trust
 
 Datenbank neustarten
 --------------------
