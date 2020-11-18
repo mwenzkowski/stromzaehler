@@ -1,0 +1,611 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 4,
+  "links": [],
+  "panels": [
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "PostgreSQL",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 18,
+        "x": 0,
+        "y": 0
+      },
+      "hiddenSeries": false,
+      "id": 2,
+      "interval": "1s",
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.2.2",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  \"timestamp\" AS \"time\",\n  power_total AS \"Summe\",\n  \"power_phase1\" AS \"Phase 1\",\n  \"power_phase2\" AS \"Phase 2\",\n  \"power_phase3\" AS \"Phase 3\"\nFROM \"stromzähler\"\nWHERE\n  $__timeFilter(\"timestamp\")\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "power_total"
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "Summe"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "\"power_phase1\""
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "Phase 1"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "\"power_phase2\""
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "Phase 2"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "\"power_phase3\""
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "Phase 3"
+                ],
+                "type": "alias"
+              }
+            ]
+          ],
+          "table": "\"stromzähler\"",
+          "timeColumn": "\"timestamp\"",
+          "timeColumnType": "timestamptz",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Leistung",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:87",
+          "format": "watt",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:88",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "light-green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "kwatth"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.2.2",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  \"timestamp\" AS \"time\",\n  energy_daily\nFROM current_values\nWHERE\n  id = 0\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "energy_daily"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "current_values",
+          "timeColumn": "\"timestamp\"",
+          "timeColumnType": "timestamptz",
+          "where": [
+            {
+              "datatype": "int4",
+              "name": "",
+              "params": [
+                "id",
+                "=",
+                "0"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Tagesverbrauch",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "light-green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "currencyEUR"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 18,
+        "y": 3
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.2.2",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  \"timestamp\" AS \"time\",\n  energy_daily * 0.295834 + 0.3\nFROM current_values\nWHERE\n  id = 0\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "energy_daily"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "current_values",
+          "timeColumn": "\"timestamp\"",
+          "timeColumnType": "timestamptz",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            },
+            {
+              "datatype": "int4",
+              "name": "",
+              "params": [
+                "id",
+                "=",
+                "0"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Tageskosten",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "decimals": 3,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "light-green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "kwatth"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "energy"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "kWh"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 18,
+        "y": 6
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.2.2",
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  \"timestamp\" AS \"time\",\n  energy\nFROM current_values\nWHERE\n  id = 0\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "energy"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "current_values",
+          "timeColumn": "\"timestamp\"",
+          "timeColumnType": "timestamptz",
+          "where": [
+            {
+              "datatype": "int4",
+              "name": "",
+              "params": [
+                "id",
+                "=",
+                "0"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Zählerstand",
+      "type": "stat"
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 18,
+        "x": 0,
+        "y": 9
+      },
+      "hiddenSeries": false,
+      "hideTimeOverride": false,
+      "id": 10,
+      "legend": {
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.2.2",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  \"date\" AS \"time\",\n  energy AS \"Energieverbrauch\"\nFROM tagesverbrauch\nWHERE\n  $__timeFilter(\"date\")\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "energy"
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "Energieverbrauch"
+                ],
+                "type": "alias"
+              }
+            ]
+          ],
+          "table": "tagesverbrauch",
+          "timeColumn": "\"date\"",
+          "timeColumnType": "date",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": "30d",
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Tagesverbräuche der letzten Tage",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:116",
+          "format": "kwatth",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "$$hashKey": "object:117",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 26,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "Stromzähler Live",
+  "uid": "SN1X_PmRz",
+  "version": 19
+}

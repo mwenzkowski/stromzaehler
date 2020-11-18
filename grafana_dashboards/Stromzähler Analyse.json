@@ -1,0 +1,236 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 6,
+  "links": [],
+  "panels": [
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "PostgreSQL",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 15,
+        "w": 19,
+        "x": 0,
+        "y": 0
+      },
+      "hiddenSeries": false,
+      "id": 2,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.2.2",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [
+            {
+              "params": [
+                "$__interval",
+                "NULL"
+              ],
+              "type": "time"
+            }
+          ],
+          "metricColumn": "none",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  $__timeGroupAlias(\"timestamp\",$__interval,NULL),\n  max(power_total) AS \"Summe (Maximum je $__interval)\",\n  max(\"power_phase1\") AS \"Phase 1 (Maximum je $__interval)\",\n  max(\"power_phase2\") AS \"Phase 2 (Maximum je $__interval)\",\n  max(\"power_phase3\") AS \"Phase 3 (Maximum je $__interval)\"\nFROM \"stromzähler\"\nWHERE\n  $__timeFilter(\"timestamp\")\nGROUP BY 1\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "power_total"
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "max"
+                ],
+                "type": "aggregate"
+              },
+              {
+                "params": [
+                  "Summe (Maximum je $__interval)"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "\"power_phase1\""
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "max"
+                ],
+                "type": "aggregate"
+              },
+              {
+                "params": [
+                  "Phase 1 (Maximum je $__interval)"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "\"power_phase2\""
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "max"
+                ],
+                "type": "aggregate"
+              },
+              {
+                "params": [
+                  "Phase 2 (Maximum je $__interval)"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "\"power_phase3\""
+                ],
+                "type": "column"
+              },
+              {
+                "params": [
+                  "max"
+                ],
+                "type": "aggregate"
+              },
+              {
+                "params": [
+                  "Phase 3 (Maximum je $__interval)"
+                ],
+                "type": "alias"
+              }
+            ]
+          ],
+          "table": "\"stromzähler\"",
+          "timeColumn": "\"timestamp\"",
+          "timeColumnType": "timestamptz",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Leistung",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:651",
+          "format": "watt",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:652",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    }
+  ],
+  "schemaVersion": 26,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Stromzähler Analyse",
+  "uid": "E0AP6yigk",
+  "version": 3
+}
