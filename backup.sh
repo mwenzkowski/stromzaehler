@@ -55,7 +55,7 @@ done
 echo "Backup der Tagesverbräuche:"
 	psql --host=192.168.2.80 --username=stromzähler --dbname=stromzähler \
 		--csv --command="SELECT * FROM tagesverbrauch;" |
-		zstdmt -q -o "tabelle_tagesverbrauch.csv.zst" || {
+		zstdmt -q -f -o "tabelle_tagesverbrauch.csv.zst" || {
 			echo "Fehler: Erstellen der komprimierten csv-Datei fehlgeschlagen !"
 			exit 1
 		}
