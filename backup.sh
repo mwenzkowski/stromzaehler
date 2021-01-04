@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright © 2020 Maximilian Wenzkowski
+# Copyright © 2021 Maximilian Wenzkowski
 
 set -o pipefail
 
@@ -24,7 +24,7 @@ backup_day() {
 
 	psql --host=192.168.2.80 --username=stromzähler --dbname=stromzähler \
 		--csv \
-		--command="SELECT timestamp,energy,power_total,power_phase1,power_phase2,power_phase3 FROM stromzähler WHERE timestamp >= '2020-11-16' AND timestamp < '2020-11-17';" |
+		--command="SELECT timestamp,energy,power_total,power_phase1,power_phase2,power_phase3 FROM stromzähler WHERE timestamp >= '$start' AND timestamp < '$end';" |
 		zstdmt -q -o "$csv_file" || {
 			echo "Fehler: Erstellen der komprimierten csv-Datei '$csv_file' fehlgeschlagen !"
 			rm "$csv_file"
@@ -59,3 +59,4 @@ echo "Backup der Tagesverbräuche:"
 			echo "Fehler: Erstellen der komprimierten csv-Datei fehlgeschlagen !"
 			exit 1
 		}
+echo Ok
