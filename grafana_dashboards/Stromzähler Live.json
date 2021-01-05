@@ -476,10 +476,10 @@
       "hideTimeOverride": false,
       "id": 10,
       "legend": {
-        "avg": true,
+        "avg": false,
         "current": false,
         "max": true,
-        "min": true,
+        "min": false,
         "show": true,
         "total": false,
         "values": true
@@ -488,7 +488,7 @@
       "linewidth": 1,
       "nullPointMode": "null",
       "options": {
-        "alertThreshold": true
+        "alertThreshold": false
       },
       "percentage": false,
       "pluginVersion": "7.2.2",
@@ -503,9 +503,10 @@
         {
           "format": "time_series",
           "group": [],
+          "hide": false,
           "metricColumn": "none",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  \"date\" AS \"time\",\n  energy AS \"Energieverbrauch\"\nFROM tagesverbrauch\nWHERE\n  $__timeFilter(\"date\")\nORDER BY 1",
+          "rawQuery": true,
+          "rawSql": "(SELECT\n  \"date\" AS \"time\",\n  energy AS \"Energieverbrauch\"\nFROM tagesverbrauch\nWHERE\n  $__timeFilter(\"date\"))\nUNION\n(SELECT\n  current_date AS \"time\",\n  energy_daily AS \"Energieverbrauch\"\nFROM current_values\nWHERE id = 0)\nORDER BY 1",
           "refId": "A",
           "select": [
             [
@@ -607,5 +608,5 @@
   "timezone": "",
   "title": "Stromzähler Live",
   "uid": "SN1X_PmRz",
-  "version": 19
+  "version": 22
 }
