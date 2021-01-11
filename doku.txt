@@ -135,6 +135,14 @@ werden:
 3. Tabellen erstellen
 =====================
 
+Mit dem Kommandozeilen-Client psql sich als Datenbank-Nutzer 'stromzähler' bei
+der Datenbank 'stromzähler' anmelden:
+
+	$psql -U stromzähler -d stromzähler
+
+Dann die folgenden SQL-Befehle ausführen um die Tabellen und Indizes zu
+erstellen.
+
 Partitionierte Tabelle 'stromzähler'
 ------------------------------------
 
