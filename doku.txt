@@ -200,6 +200,17 @@ Tabelle für den Energieverbrauch pro Tag
 
 	CREATE INDEX idx_tagesverbrauch_date ON tagesverbrauch(date);
 
+
+Tabelle für den monatlichen Energieverbrauch
+--------------------------------------------
+
+	CREATE TABLE monatsverbrauch(
+		date DATE NOT NULL,
+		energy DOUBLE PRECISION);
+
+	CREATE INDEX idx_monatsverbrauch_date ON monatsverbrauch(date);
+
+
 4. CSV-Dateien einlesen
 =======================
 
