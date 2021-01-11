@@ -151,14 +151,14 @@
     "list": []
   },
   "time": {
-    "from": "now/y",
+    "from": "now-2y",
     "to": "now"
   },
   "timepicker": {
-    "hidden": true
+    "hidden": false
   },
   "timezone": "",
-  "title": "Jahresübersicht",
+  "title": "Tagesübersicht",
   "uid": "bT5dRSWRz",
-  "version": 3
+  "version": 5
 }
