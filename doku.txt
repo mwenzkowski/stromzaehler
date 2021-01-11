@@ -17,7 +17,7 @@ Achtung: Damit stehen nicht mehr alle Funktionen der GPU zu verfügung,
 
 	sudo apt install postgresql postgresql-client libpq-dev
 
-Dies erstellt den Linux-Nutzer 'postgres', den postgres-Nuter 'postgres' (superuser)
+Dies erstellt den Linux-Nutzer 'postgres', den postgres-Nutzer 'postgres' (superuser)
 und den Datenbank-Cluster '/var/lib/postgresql/11/main'
 
 Die existierenden Datenbank-Cluster können mit
@@ -70,7 +70,7 @@ work_mem: Der Ram der pro Datenbank-Verbindung verbraucht werden kann. Optimale
               124 / 20 = 6,2 MB ~ 6 MB
 
 maintenance_work_mem: Stellt den Ram für Wartungsaufgaben. Es wird empfohlen
-                      den Wert höher als work_mem zu setzen, dies vergessert
+                      den Wert höher als work_mem zu setzen, dies verbessert
                       die Leistung für VACUUM. Im allgemeine sollte der Wert 5%
                       der RAM Größe haben.
 
@@ -100,7 +100,7 @@ machen (mit sudo bearbeiten):
 	local   all             all                                     trust
 
 
-Diese Änderung bewirkt das sich lokale Unix-Nutzer als jeder Datenbank-Nuter
+Diese Änderung bewirkt das sich lokale Unix-Nutzer als jeder Datenbank-Nutzer
 (außer dem DB-Nutzer 'postgres') mit jeder Datenbank verbinden können. Als
 Datenbank-Nutzer 'postgres' kann man sich nur als Linux-Nutzer 'postgres' mit
 einer Datenbank verbinden, da vor der oben geänderten Zeile die Einstellung
@@ -123,7 +123,7 @@ werden:
 	$ sudo systemctl restart postgresql@11-main
 
 
-2. postgres-Nuter und Datenbank für den Stromzähler erstellen
+2. postgres-Nutzer und Datenbank für den Stromzähler erstellen
 =============================================================
 
 	$ sudo -iu postgres
@@ -193,7 +193,7 @@ Tabelle für den Energieverbrauch pro Tag
 	CREATE INDEX idx_tagesverbrauch_date ON tagesverbrauch(date);
 
 4. CSV-Dateien einlesen
-=====================
+=======================
 
 	$psql -U stromzähler -d stromzähler
 	stromzähler=> \copy stromzähler(timestamp, energy, power_total, power_phase1, power_phase2, power_phase3) from '/home/pi/csv_backup/all_up_to_2020-11-01.csv' DELIMITER ',' CSV HEADER
@@ -233,7 +233,7 @@ Zum aktivieren des Dienstes beim Booten und zum sofortigen starten
 	sudo systemctl start stromzaehler.service
 
 ausführen. Ein Befehl der beides gleichzeitung macht ist
-	
+
 	sudo systemctl enable --now stromzaehler.service
 
 
@@ -255,7 +255,7 @@ Zum einlesen der neuen Service-Datei
 
 ausführen.
 
-Zum aktivieren und starten des Timers 
+Zum aktivieren und starten des Timers
 
 	sudo systemctl enable --now stromzaehler_daily.timer
 
