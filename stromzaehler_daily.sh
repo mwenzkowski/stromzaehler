@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright © 2020 Maximilian Wenzkowski
+# Copyright © 2021 Maximilian Wenzkowski
 
 # -e: Skript sofort beenden wenn ein Befehl fehlschlägt
 # -u: Behandle unbekannte Variablen als Fehler
@@ -99,7 +99,7 @@ function insert_missing_daily_energy_consumption {
 	local -r today="$(date +%F)"
 
 	local date="$(psql -U "$db_user" -d "$db_name" --tuples-only --no-align \
-		-c "SELECT date FROM tagesverbrauch ORDER BY date DESC LIMIT 1;")"
+		-c "SELECT date FROM $tagesverbrauch_table ORDER BY date DESC LIMIT 1;")"
 	if [ -z "$date" ]
 	then
 		date="2019-10-17" # Erster Tag mit bekanntem Verbrauch
