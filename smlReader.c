@@ -1,4 +1,4 @@
-// Copyright © 2020 Maximilian Wenzkowski
+// Copyright © 2021 Maximilian Wenzkowski
 
 #include <assert.h> // assert();
 #include <errno.h>
@@ -322,7 +322,7 @@ bool smlReader_nextMeasurement(struct smlReader *sr, struct measurement *m)
 		return false;
 	}
 
-	read_measurements(sr,m);
+	read_measurements(sr, m);
 	clock_gettime(CLOCK_REALTIME, &m->timestamp);
 
 	return true;

@@ -1,4 +1,4 @@
-// Copyright © 2020 Maximilian Wenzkowski
+// Copyright © 2021 Maximilian Wenzkowski
 
 #include "date.h"
 #include "smlReader.h"
@@ -32,10 +32,11 @@ counter_cache_insert(struct counter_cache *cache, double counter,
 	cache->empty = false;
 }
 
-void counter_cache_clear(struct counter_cache *cache)
+void
+counter_cache_clear(struct counter_cache *cache)
 {
-		assert(cache);
-		cache->empty = true;
+	assert(cache);
+	cache->empty = true;
 }
 
 
