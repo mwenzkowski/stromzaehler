@@ -279,3 +279,24 @@ Zum aktivieren und starten des Timers
 	sudo systemctl enable --now stromzaehler_daily.timer
 
 ausführen.
+
+8. Nicht mehr benötigte Partitionen löschen
+===========================================
+
+Mit dem Kommandozeilen-Client psql sich als Datenbank-Nutzer 'stromzähler' bei
+der Datenbank 'stromzähler' anmelden:
+
+	$psql -U stromzähler -d stromzähler
+
+Zu erst wird die gewünschte Partition von der partitionierten Tabelle 'detached':
+
+	ALTER TABLE stromzähler DETACH PARTITION stromzähler_yyyy_mm;
+
+Damit ist sichergestellt das anschließende Archiv-Operationen (pg_dump, COPY)
+nicht die Anfragen an die Tablelle 'stromzähler' beinflussen.
+
+Um die Partition zu löschen wird
+
+	DROP TABLE stromzähler_yyyy_mm;
+
+ausgeführt.
