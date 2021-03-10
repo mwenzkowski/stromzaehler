@@ -124,7 +124,7 @@ werden:
 
 
 2. postgres-Nutzer und Datenbank für den Stromzähler erstellen
-=============================================================
+==============================================================
 
 	$ sudo -iu postgres
 	[postgres]$ createuser stromzähler
