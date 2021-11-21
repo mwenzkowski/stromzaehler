@@ -261,7 +261,8 @@ update_current_values(struct stromzaehler *stromzaehler,
 	} else {
 		len = snprintf(query_buf, QUERY_BUF_LEN,
 			"UPDATE current_values SET timestamp = CURRENT_TIMESTAMP, "
-			"energy = NULL, energy_daily = NULL WHERE id = 0;");
+			"energy = %.7f, energy_daily = NULL WHERE id = 0;",
+			measurement->energy_count);
 	}
 	assert(len < QUERY_BUF_LEN && "query_buf too small");
 
