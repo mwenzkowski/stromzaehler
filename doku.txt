@@ -4,7 +4,7 @@
 Der Raspberry Pi 1B besitzt nur 512 MB Ram. Setze den Anteil der von der GPU
 genutzt werden kann auf das Minimum von 16MB um mehr Ram für Programme und
 Betriebssystem zu haben. Dazu in der Datei '/boot/config.txt' die entsprechende
-Zeilt ändern zu:
+Zeile ändern zu:
 
 	gpu_mem=16
 
