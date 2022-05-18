@@ -1,5 +1,5 @@
 [Unit]
-Description=Aufgaben des Stromzählers die einmal pro Tag anfallen ausführen
+Description=Execute the daily tasks of the stromzaehler service
 Requires=postgresql@11-main.service
 After=postgresql@11-main.service
 

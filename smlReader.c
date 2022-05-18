@@ -17,7 +17,7 @@
 #include "crc16.h"
 
 #define SML_LEN 404
-#define READ_LEN 255 // muss > 4 sein
+#define READ_LEN 255 // must be > 4
 
 #define CRC_START 366
 
@@ -51,7 +51,7 @@ serialPort_open(const char* device)
 	int fd = open(device, O_RDWR | O_NOCTTY);
 
 	if (fd < 0) {
-		fprintf(stderr, "Fehler: Öffnen von %s fehlgeschlagen (%s)\n",
+		fprintf(stderr, "Error: Opening %s failed (%s)\n",
 			device, strerror(errno));
 		return -1;
 	}
@@ -62,7 +62,7 @@ serialPort_open(const char* device)
 	ioctl(fd, TIOCMSET, &bits);
 
 	if (tcgetattr(fd, &config) < 0) {
-		fprintf(stderr, "Fehler: tcgetattr() fehlgeschlagen (%s)\n",
+		fprintf(stderr, "Error: tcgetattr() failed (%s)\n",
 			strerror(errno));
 		return -1;
 	}
@@ -77,12 +77,12 @@ serialPort_open(const char* device)
 
 	// set speed to 9600 baud
 	if (cfsetispeed(&config, B9600) < 0) {
-		fprintf(stderr, "Fehler: cfsetispeed() fehlgeschlagen (%s)\n",
+		fprintf(stderr, "Error: cfsetispeed() failed (%s)\n",
 			strerror(errno));
 		return -1;
 	}
 	if (cfsetospeed(&config, B9600) < 0) {
-		fprintf(stderr, "Fehler: cfsetospeed() fehlgeschlagen (%s)\n",
+		fprintf(stderr, "Error: cfsetospeed() failed (%s)\n",
 			strerror(errno));
 		return -1;
 	}
@@ -91,7 +91,7 @@ serialPort_open(const char* device)
 	config.c_cc[VTIME] = 1;
 
 	if (tcsetattr(fd, TCSANOW, &config) < 0) {
-		fprintf(stderr, "Fehler: tcsetattr() fehlgeschlagen (%s)\n",
+		fprintf(stderr, "Error: tcsetattr() failed (%s)\n",
 			strerror(errno));
 		return -1;
 	}
@@ -114,13 +114,13 @@ smlReader_create(const char *device)
 
 	struct smlReader *sr = calloc(1, sizeof(struct smlReader));
 	if (sr == NULL) {
-		fprintf(stderr, "Fehler: Nicht genug Speicher.\n");
+		fprintf(stderr, "Error: Out of memory.\n");
 		return NULL;
 	}
 
 	sr->device = strdup(device);
 	if (sr->device == NULL) {
-		fprintf(stderr, "Fehler: strdup() fehlgeschlagen (%s)\n",
+		fprintf(stderr, "Error: strdup() failed (%s)\n",
 			strerror(errno));
 		free(sr);
 		return NULL;
@@ -132,7 +132,7 @@ smlReader_create(const char *device)
 		free(sr);
 		return NULL;
 	}
-	
+
 	return sr;
 }
 
@@ -144,7 +144,7 @@ smlReader_close(struct smlReader *sr)
 	}
 
 	if (close(sr->fd) < 0) {
-		fprintf(stderr, "Fehler: Schließen von %s fehlgeschlagen (%s).\n",
+		fprintf(stderr, "Error: Closing %s faild (%s).\n",
 			sr->device, strerror(errno));
 	}
 	free(sr->device);
@@ -160,15 +160,15 @@ readByte(struct smlReader *sr, uint8_t *dest)
 	while (sr->len == 0) {
 		int n = read(sr->fd, sr->read_buf, READ_LEN);
 		if (n == -1) {
-			fprintf(stderr, "Fehler: Lesen aus %s "
-				"fehlgeschlagen (%s).\n",
+			fprintf(stderr, "Error: Reading from %s "
+				"failed (%s).\n",
 				sr->device, strerror(errno));
 			return false;
 		}
 		sr->len = n;
 		sr->next = 0;
 	}
-	
+
 	*dest = sr->read_buf[sr->next];
 	sr->next++;
 	sr->len--;
@@ -181,18 +181,20 @@ check_received_data(struct smlReader *sr)
 {
 	assert(sr);
 
-	// Prüfe ob die End-Sequenz empfangen wurde
+	// check if the end sequences was received
 	if (memcmp(&(sr->sml_buf[END_SEQ_START]), endSeq, sizeof(endSeq)) != 0) {
 		return false;
 	}
 
-	// Prüfe Checksumme der inneren SML-Nachricht
+	// verify checksum of the inner SML-Message
 	uint16_t checksum = ((uint16_t) sr->sml_buf[CRC_START]) << 8;
 	checksum |= (uint16_t) sr->sml_buf[CRC_START+1];
 
 	if (crc16( &(sr->sml_buf[MSG_START]), MSG_LEN) != checksum) {
 		fprintf(stderr, "Fehler bei der Übertragung (berechnete "
 		"Checksumme stimmt nicht mit der empfangen überein)\n");
+		fprintf(stderr, "Transmission error (calculated "
+		"checksum differs from the received checksum)\n");
 		return false;
 	}
 	return true;
@@ -207,7 +209,7 @@ readSmlFile(struct smlReader *sr)
 	while (true) {
 		unsigned len = 0;
 
-		// Warte auf Startsequenz
+		// Wait for the start sequence
 		while (len < 8) {
 			if (readByte(sr, &(sr->sml_buf[len])) == false) {
 				return false;
@@ -218,11 +220,10 @@ readSmlFile(struct smlReader *sr)
 			} else {
 				len = 0;
 			}
-
 		}
 
-		// Daten einlesen und wenn zwei Escape-Sequenzen hintereinander
-		// auftreten eine ignorieren
+		// Read data and if two escape sequences occour in a row, ignore one
+		// escape sequence
 		unsigned esc_counter = 0;
 		while (len < SML_LEN - 8) {
 			if (readByte(sr, &(sr->sml_buf[len])) == false) {
@@ -239,7 +240,7 @@ readSmlFile(struct smlReader *sr)
 			len++;
 		}
 
-		// End-Sequenz lesen
+		// read end sequence
 		while (len < SML_LEN) {
 			if (readByte(sr, &(sr->sml_buf[len])) == false) {
 				return false;

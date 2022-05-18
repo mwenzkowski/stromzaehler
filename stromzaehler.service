@@ -1,5 +1,5 @@
 [Unit]
-Description=Stromzaehlerdaten auslesen und in Datenbank einfügen
+Description=Read electric meter data and insert it into the database
 Requires=postgresql@11-main.service
 After=postgresql@11-main.service
 

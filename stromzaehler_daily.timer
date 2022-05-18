@@ -1,5 +1,5 @@
 [Unit]
-Description=Täglich stromzähler_daily.sh ausführen
+Description=Execute stromzähler_daily.sh daily
 
 [Timer]
 OnCalendar=00:01

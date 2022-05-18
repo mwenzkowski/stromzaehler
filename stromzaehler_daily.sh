@@ -1,14 +1,11 @@
 #!/bin/bash
 # Copyright © 2021 Maximilian Wenzkowski
 
-# -e: Skript sofort beenden wenn ein Befehl fehlschlägt
-# -u: Behandle unbekannte Variablen als Fehler
-# -x: Gib jeden Befehl aus, bevor er ausgeführt wird
-# -o pipefail: Hat (mind.) ein Befehl in einer Kette von Pipe-Befehlen einen
-#              von Null verschiedenen Exit-Code, wird der von Null verschiedene
-#              Exit-Code von dem am weitesten rechts stehenden Befehl als
-#              Exit-Code der gesamten Pipe-Kette benutzt. Ansonsten ist der
-#              Exit-Code Null.
+# -e: Exit script immediatly if a command fails
+# -u: handle unknown variables like an error
+# -o pipefail: If (at least) one command in a chain of pipe-commands has a
+#              non zero exit code, the exit code of the rightmost failed
+#              command is returned as the exit code of the whole pipe chain
 set -euo pipefail
 
 readonly db_user="stromzähler"
@@ -27,7 +24,7 @@ function has_table {
 
 	result="$(psql -U "$db_user" -d "$db_name" --tuples-only --no-align \
 		-c "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public' AND tablename = '$table_name';")"
-	
+
 	! [ -z "$result" ]
 }
 
@@ -103,13 +100,12 @@ function insert_missing_daily_energy_consumption {
 		-c "SELECT date FROM $tagesverbrauch_table ORDER BY date DESC LIMIT 1;")"
 	if [ -z "$date" ]
 	then
-		date="2019-10-17" # Erster Tag mit bekanntem Verbrauch
+		date="2019-10-17" # First day with known energy usage
 	else
 		date="$(date "--date=$date +1 day" +%F)"
 	fi
 
-	# Abbrechen wenn das letzte Datum aus der Datenbank älter oder gleich
-	# dem heutigen Datum ist
+	# Abort if the last date in the data base is older or equal to todays date
 	local -r today_sec="$(date -d "$today" +%s)"
 	local -r date_sec="$(date -d "$date" +%s)"
 	[ "$date_sec" -ge "$today_sec" ] && return
@@ -123,7 +119,7 @@ function insert_missing_daily_energy_consumption {
 }
 
 function insert_monthly_energy_consumption {
-	local -r date="$1" # Muss im Format yyyy-mm-dd sein
+	local -r date="$1" # have to be in format yyyy-mm-dd
 
 	local -r year="${date%%-*}" # yyyy
 	local -r temp="${date#*-}" # mm-dd
@@ -160,14 +156,13 @@ function insert_missing_monthly_energy_consumption {
 
 	if [ -z "$last_month" ]
 	then
-		# Nach diesem Monat folgt der erste Monat mit bekanntem Verbrauch
+		# After this month follows the first month with known energy usage
 		last_month="2019-10-01"
 	fi
 	last_month="$(date "--date=$last_month" +%Y-%m-01)"
 	local month="$(date "--date=$last_month + 1 month" +%Y-%m-01)"
 
-	# Abbrechen wenn das letzte Datum aus der Datenbank älter oder gleich
-	# dem heutigen Datum ist
+	# Abort if the last date in the data base is older or equal to todays date
 	local -r prev_month_sec="$(date -d "$prev_month" +%s)"
 	local -r month_sec="$(date -d "$month" +%s)"
 	[ "$month_sec" -gt "$prev_month_sec" ] && return

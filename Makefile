@@ -8,7 +8,7 @@ objects = main.o smlReader.o crc16.o date.o
 $(name): $(objects)
 	$(CC) $(CFLAGS) -o $@ $(objects) $(LDLIBS)
 
-# Eine Regel file.o : <Abhängigkeiten> hängt automatisch von file.c ab
+# A rule file.o : <dependencies> automatically depends on file.c
 main.o:smlReader.h date.h
 smlReader.o: smlReader.h crc16.h
 crc16.o: crc16.h

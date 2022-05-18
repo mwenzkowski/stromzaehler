@@ -4,18 +4,18 @@
 set -o pipefail
 
 backup_day() {
-	echo "Backup des Tages $date:"
+	echo "Backup of day $date:"
 
 	local csv_dir="tabelle_stromzähler"
 	local csv_file="$csv_dir/$date.csv.zst"
 
 	[ -f "$csv_file" ] && {
-		echo "Fehler: Die Datei '$csv_file' existiert schon!"
+		echo "Error: The file '$csv_file' already exists!"
 		exit 1
 	}
 
 	mkdir -p "$csv_dir" || {
-		echo "Fehler: Der Ordner '$csv_dir' konnte nicht erstellt werden!"
+		echo "Error: The folder '$csv_dir' could not be created!"
 		exit 1
 	}
 
@@ -26,7 +26,7 @@ backup_day() {
 		--csv \
 		--command="SELECT timestamp,energy,power_total,power_phase1,power_phase2,power_phase3 FROM stromzähler WHERE timestamp >= '$start' AND timestamp < '$end';" |
 		zstdmt -q -o "$csv_file" || {
-			echo "Fehler: Erstellen der komprimierten csv-Datei '$csv_file' fehlgeschlagen !"
+			echo "Error: Creating the compressed csv file '$csv_file' failed!"
 			rm "$csv_file"
 			exit 1
 		}
@@ -36,7 +36,7 @@ backup_day() {
 readonly LAST_DATE_FILE="./.last_day"
 
 if ! [ -f "$LAST_DATE_FILE" ]; then
-	echo "Fehler: Die Datei '$LAST_DATE_FILE' existiert nicht!"
+	echo "Error: The file '$LAST_DATE_FILE' does not exist!"
 	exit 1
 fi
 
@@ -52,20 +52,20 @@ do
 	date="$(date --date="$date + 1 day" --iso-8601=date)"
 done
 
-echo "Backup der Tagesverbräuche:"
+echo "Backup table of daily energy usage:"
 	psql --host=192.168.2.80 --username=stromzähler --dbname=stromzähler \
 		--csv --command="SELECT * FROM tagesverbrauch;" |
 		zstdmt -q -f -o "tabelle_tagesverbrauch.csv.zst" || {
-			echo "Fehler: Erstellen der komprimierten csv-Datei fehlgeschlagen !"
+			echo "Error: Creating the compressed csv file failed!"
 			exit 1
 		}
 echo Ok
 
-echo "Backup der Monatsverbräuche:"
+echo "Backup table of monthly energy usages:"
 	psql --host=192.168.2.80 --username=stromzähler --dbname=stromzähler \
 		--csv --command="SELECT * FROM monatsverbrauch;" |
 		zstdmt -q -f -o "tabelle_monatsverbrauch.csv.zst" || {
-			echo "Fehler: Erstellen der komprimierten csv-Datei fehlgeschlagen !"
+			echo "Error: Creating the compressed csv file failed!"
 			exit 1
 		}
 echo Ok

@@ -72,7 +72,8 @@ stromzaehler_create_SmlReader(struct stromzaehler *stromzaehler)
 
 	stromzaehler->smlReader = smlReader_create(SERIAL_DEV);
 	if (stromzaehler->smlReader == NULL) {
-		// smlReader_create() gibt eine Fehlermeldung aus
+		// smlReader_create() has printed an error message, therefore we don't
+		// need to print one
 		error_exit(stromzaehler);
 	}
 }
@@ -84,7 +85,7 @@ stromzaehler_connect_to_db(struct stromzaehler *stromzaehler)
 
 	stromzaehler->dbConn = PQconnectdb("user=stromzähler dbname=stromzähler");
 	if (stromzaehler->dbConn == NULL) {
-		fprintf(stderr, "PQconnectdb() fehlgeschlagen");
+		fprintf(stderr, "PQconnectdb() failed");
 		error_exit(stromzaehler);
 	}
 	if (PQstatus(stromzaehler->dbConn) == CONNECTION_BAD) {
@@ -288,9 +289,10 @@ update_current_values(struct stromzaehler *stromzaehler,
 int
 main()
 {
-	// Zeilenweise Pufferung einstellen, für den Fall das stdout/stderr
-	// nicht mit einem Terminal verbunden sind. Dies ist z.B. der Fall wenn
-	// dieses Programm als Dienst automatisch beim Booten gestartet wird.
+	// stdout and stderr are, by default, only line bufferd if they are
+	// connected to a terminal. Since that is not the case when this program is
+	// started as a service by systemd, we explicitly enable line buffering.
+	// Therefore all printed lines can be seen immediatly in the log.
 	setlinebuf(stdout);
 	setlinebuf(stderr);
 
@@ -309,6 +311,6 @@ main()
 		update_current_values(&stromzaehler, &measurement);
 	}
 
-	fprintf(stderr, "smlReader_nextMeasurement() fehlgeschlagen");
+	fprintf(stderr, "smlReader_nextMeasurement() failed");
 	error_exit(&stromzaehler);
 }
