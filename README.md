@@ -3,6 +3,8 @@
 This is a personal project to read the data of an electronic electricity meter,
 store it in a database and visualize it.
 
+![screenshot of grafana](https://raw.github.com/mwenzkowski/stromzaehler/master/assets/preview.png)
+
 ## Overview
 
 The electricity meter I have at home has an infrared serial interface with
